@@ -15,6 +15,7 @@ import { home, about, person, baseURL, routes } from "@/resources";
 import { Mailchimp } from "@/components";
 import { Projects } from "@/components/work/Projects";
 import { Posts } from "@/components/blog/Posts";
+import Post from "@/components/blog/Post";
 
 export async function generateMetadata() {
   return Meta.generate({
@@ -108,22 +109,22 @@ export default function Home() {
           <Row fillWidth paddingRight="64">
             <Line maxWidth={48} />
           </Row>
-          <Row fillWidth gap="24" marginTop="40" s={{ direction: "column" }}>
+          <Row fillWidth gap="24" marginTop="40" s={{ direction: "row" }}>
             <Row flex={1} paddingLeft="l" paddingTop="24">
               <Heading as="h2" variant="display-strong-xs" wrap="balance">
                 Latest from the blog
               </Heading>
             </Row>
-            <Row flex={3} paddingX="20">
-              <Posts range={[1, 2]} columns="2" />
-            </Row>
+          </Row>
+          <Row flex={1} paddingX="20">
+            <Posts range={[1, 1]} thumbnail />
           </Row>
           <Row fillWidth paddingLeft="64" horizontal="end">
             <Line maxWidth={48} />
           </Row>
         </Column>
       )}
-      <Projects range={[3,3]} />
+      <Projects range={[3, 3]} />
       <Mailchimp />
     </Column>
   );

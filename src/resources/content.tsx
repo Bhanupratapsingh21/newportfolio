@@ -392,7 +392,24 @@ const gallery: Gallery = {
   label: "Gallery",
   title: `Gallery – ${person.name}`,
   description: `Visual snapshots`,
-  images: [],
+  images: [
+  { src: "https://res.cloudinary.com/djwzwq4cu/image/upload/v1769450119/IMG_20250908_032325748_njdlup.jpg", alt: "Gallery Image 1",  orientation: "vertical", },
+  { src: "https://res.cloudinary.com/djwzwq4cu/image/upload/v1769450120/IMG_20250808_194938986_i6sgv2.jpg", alt: "Gallery Image 2",  orientation: "vertical", },
+  { src: "https://res.cloudinary.com/djwzwq4cu/image/upload/v1769450121/IMG_20251025_215751375_thlurx.jpg", alt: "Gallery Image 3",  orientation: "vertical", },
+  { src: "https://res.cloudinary.com/djwzwq4cu/image/upload/v1769450123/IMG_20251028_223522914_wftoi9.jpg", alt: "Gallery Image 4",  orientation: "vertical", },
+  { src: "https://res.cloudinary.com/djwzwq4cu/image/upload/v1769450128/IMG_20250811_215539911_rbg6c2.jpg", alt: "Gallery Image 5",  orientation: "vertical", },
+  { src: "https://res.cloudinary.com/djwzwq4cu/image/upload/v1769450129/IMG_20250930_175455167_btwrjt.jpg", alt: "Gallery Image 6",  orientation: "vertical", },
+  { src: "https://res.cloudinary.com/djwzwq4cu/image/upload/v1769450129/IMG_20250921_161337615_vmvhjs.jpg", alt: "Gallery Image 7",  orientation: "vertical", },
+  { src: "https://res.cloudinary.com/djwzwq4cu/image/upload/v1769450128/IMG_20251028_223601286_nme1n0.jpg", alt: "Gallery Image 8",  orientation: "vertical", },
+  { src: "https://res.cloudinary.com/djwzwq4cu/image/upload/v1769450130/IMG_20250908_032429686_s1511t.jpg", alt: "Gallery Image 9",  orientation: "vertical", },
+  { src: "https://res.cloudinary.com/djwzwq4cu/image/upload/v1769450133/IMG_20251028_223526485_kstd3y.jpg", alt: "Gallery Image 10",  orientation: "vertical", },
+  { src: "https://res.cloudinary.com/djwzwq4cu/image/upload/v1769450133/IMG_20251002_073024200_rleijo.jpg", alt: "Gallery Image 11",  orientation: "vertical", },
+  { src: "https://res.cloudinary.com/djwzwq4cu/image/upload/v1769450139/IMG_20251028_223432175_yd8cyn.jpg", alt: "Gallery Image 12",  orientation: "vertical", },
+  { src: "https://res.cloudinary.com/djwzwq4cu/image/upload/v1769450140/IMG_20250908_032301169_y3nbmi.jpg", alt: "Gallery Image 13",  orientation: "vertical", },
+  { src: "https://res.cloudinary.com/djwzwq4cu/image/upload/v1769450140/IMG_20251028_223351171_ncc61u.jpg", alt: "Gallery Image 14",  orientation: "vertical", },
+  { src: "https://res.cloudinary.com/djwzwq4cu/image/upload/v1769450141/IMG_20250811_215544266_m1cuhj.jpg", alt: "Gallery Image 15",  orientation: "vertical", }
+]
+
 };
 
 export { person, social, newsletter, home, about, blog, work, gallery };
