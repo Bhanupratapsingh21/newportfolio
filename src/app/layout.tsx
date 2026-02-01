@@ -3,7 +3,7 @@ import "@once-ui-system/core/css/tokens.css";
 import "@/resources/custom.css";
 
 import classNames from "classnames";
-
+import { Analytics } from "@vercel/analytics/next"
 import {
   Background,
   Column,
@@ -165,6 +165,7 @@ export default async function RootLayout({
           <Footer />
         </Column>
       </Providers>
+      <Analytics />
     </Flex>
   );
 }
