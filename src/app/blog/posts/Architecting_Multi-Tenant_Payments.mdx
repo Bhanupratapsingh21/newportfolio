@@ -1,0 +1,370 @@
+---
+title: "Architecting Multi-Tenant Payments: Why Your 'Clever' Card Validation Isn't Enough"
+publishedAt: "2026-04-13"
+image: "https://res.cloudinary.com/dmpsz3ohd/image/upload/v1776035450/drzuailbfrm303zetkyx.png"
+summary: "You start off trying to build a feature, stumble upon a clever algorithm, and then realize that the algorithm is only 1% of the actual problem. Here's what happened when I tried to 'hack' card validation."
+tag: "System Design"
+---
+
+In the world of SaaS, "simple" is a dangerous word.
+
+I recently built an admin panel for a multi-tenant platform where each business (tenant) needed to process their own payments, manage subscriptions, and vault customer cards. It sounds straightforward—until you realize you're balancing **PCI compliance**, **data isolation**, and **UX** all at once [web:1].
+
+Here is how we built a production-ready multi-tenant payment system using Cashfree, tokenization, and the Luhn algorithm (and why Luhn almost tricked me).
+
+<Media 
+  src="https://res.cloudinary.com/dmpsz3ohd/image/upload/v1776036407/t43l4oznclsubuh4yb8d.png" 
+  alt="Multi-Tenant Payment Architecture" 
+   
+  radius="l"
+  sizes="100vw"
+/>
+
+## The Requirements: Where Things Got Real
+
+To keep this scalable, the system had to meet four non-negotiables [web:1]:
+
+<Row fillWidth gap="8" marginBottom="16" marginTop="8">
+  <Column fillWidth border="neutral-alpha-medium" padding="16" radius="m">
+    <Text variant="label-default-s" onBackground="brand-weak" marginBottom="8">1. Provider Isolation</Text>
+    <Text variant="body-default-s">Each tenant uses their own payment credentials. Tenant A's money never touches Tenant B's account.</Text>
+  </Column>
+  <Column fillWidth border="neutral-alpha-medium" padding="16" radius="m">
+    <Text variant="label-default-s" onBackground="brand-weak" marginBottom="8">2. Zero-Knowledge Storage</Text>
+    <Text variant="body-default-s">We never touch raw card data. Ever. Not even in logs.</Text>
+  </Column>
+  <Column fillWidth border="neutral-alpha-medium" padding="16" radius="m">
+    <Text variant="label-default-s" onBackground="brand-weak" marginBottom="8">3. Encrypted Configs</Text>
+    <Text variant="body-default-s">Tenant API keys are never stored in plain text. AES-256 at rest.</Text>
+  </Column>
+  <Column fillWidth border="neutral-alpha-medium" padding="16" radius="m">
+    <Text variant="label-default-s" onBackground="brand-weak" marginBottom="8">4. Tokenization</Text>
+    <Text variant="body-default-s">Cards are "remembered" via provider-side tokens, not local DB records.</Text>
+  </Column>
+</Row>
+
+## Multi-Tenant Payments: The Cashfree Setup
+
+I decided to use Cashfree for payments. Each tenant connects their own account, and I store their credentials so I can process payments on their behalf [web:1].
+
+### What We Store in the Database
+
+<CodeBlock
+    marginBottom="16"
+    marginTop="8"
+    codes={[
+      {
+        code:
+`{
+  "tenant_id": "tenant_123",
+  "provider": "cashfree",
+  "app_id": "CF_PROD_AX2",
+  "secret_key": "AES_256_ENCRYPTED_BLOB", // Decrypted only in memory
+  "environment": "production",
+  "created_at": "2026-01-26T10:00:00Z"
+}`,
+        language: "json",
+        label: "Tenant Credentials Schema"
+      }
+    ]}
+/>
+
+<Feedback
+    icon
+    variant="info"
+    title="Security First"
+    description="The secret_key is encrypted before storage. We decrypt it in memory only when processing a payment. The client-side never breathes the same air as your API secrets."
+/>
+
+### How It Works
+
+<Row fillWidth gap="8" marginBottom="16" marginTop="8">
+  <Column fillWidth border="neutral-alpha-medium" padding="16" radius="m">
+    <Text variant="label-default-s" onBackground="brand-weak" marginBottom="8">Step 1</Text>
+    <Text variant="body-default-s">User initiates payment → Frontend sends tenant_id + amount</Text>
+  </Column>
+  <Column fillWidth border="neutral-alpha-medium" padding="16" radius="m">
+    <Text variant="label-default-s" onBackground="brand-weak" marginBottom="8">Step 2</Text>
+    <Text variant="body-default-s">Backend fetches encrypted credentials for that tenant</Text>
+  </Column>
+  <Column fillWidth border="neutral-alpha-medium" padding="16" radius="m">
+    <Text variant="label-default-s" onBackground="brand-weak" marginBottom="8">Step 3</Text>
+    <Text variant="body-default-s">Decrypt secret_key (in backend only) → Call Cashfree APIs</Text>
+  </Column>
+</Row>
+
+## Saving Cards for Recurring Payments
+
+Now this was the tricky part. I needed auto-debit for subscriptions, which meant I needed a way to "remember" cards [web:1].
+
+### What I DID NOT do
+
+* ❌ Store raw card number
+* ❌ Store CVV  
+* ❌ Store full expiry insecurely
+
+### What I did instead: Tokenization
+
+<CodeBlock
+    marginBottom="16"
+    marginTop="8"
+    codes={[
+      {
+        code:
+`{
+  "customer_id": "cust_789",
+  "tenant_id": "tenant_123",
+  "card_token": "tok_xxxxx",  // From Cashfree
+  "last4": "4242",
+  "card_type": "VISA",
+  "expiry_month": "08",
+  "expiry_year": "2028"
+}`,
+        language: "json",
+        label: "Stored Card Token Schema"
+      }
+    ]}
+/>
+
+<Feedback
+    icon
+    variant="success"
+    title="Why Tokenization Works"
+    description="The token is useless outside Cashfree. Even if our database leaks, no real card exposure. Fully scalable for subscriptions across thousands of tenants."
+/>
+
+## The Rabbit Hole: "Can I Validate Cards Without APIs?"
+
+While building the frontend, I wanted instant validation. I thought:
+
+> "Do I really need to hit a payment API just to check if a card is valid?"
+
+That's when I discovered the **Luhn Algorithm** (also called the Mod 10 check).
+
+And for a moment… it felt like a hack [web:1].
+
+<Media 
+  src="https://res.cloudinary.com/dmpsz3ohd/image/upload/v1776035867/vhiiqwfkbzpojm4wprqg.png" 
+  alt="Luhn Algorithm Visualization" 
+   
+  radius="l"
+  sizes="100vw"
+/>
+
+## Explaining Luhn Like You're 5
+
+Let's take a card: `5555 5555 5555 4444`
+
+<AccordionGroup 
+  items={[
+    {
+      title: "Step 1: Start from the second last digit",
+      content: <Text variant="body-default-s" onBackground="neutral-weak">Move from right to left. We'll double every second number.</Text>
+    },
+    {
+      title: "Step 2: Double every second number",
+      content: <Text variant="body-default-s" onBackground="neutral-weak">4 → 4×2 = 8<br/>5 → skip<br/>5 → 5×2 = 10<br/>5 → skip<br/>5 → 10<br/>And so on. You get: 8, 10, 10, 10, 10...</Text>
+    },
+    {
+      title: "Step 3: If number has 2 digits, split it",
+      content: <Text variant="body-default-s" onBackground="neutral-weak">10 → 1 + 0 = 1<br/>8 → stays 8</Text>
+    },
+    {
+      title: "Step 4: Add everything",
+      content: <Text variant="body-default-s" onBackground="neutral-weak">1 + 5 = 6<br/>6 + 1 = 7<br/>7 + 5 = 12<br/>12 + 1 = 13<br/>Eventually you get Total = 60</Text>
+    },
+    {
+      title: "Step 5: Final check",
+      content: <Text variant="body-default-s" onBackground="neutral-weak">If Total % 10 === 0, the card number is mathematically valid (format-wise). 60 % 10 = 0 → Valid!</Text>
+    }
+  ]}
+/>
+
+## Clean JavaScript Implementation
+
+Here's a production-friendly version that's clean, readable, and performant [web:1]:
+
+<CodeBlock
+    marginBottom="16"
+    marginTop="8"
+    codes={[
+      {
+        code:
+`/**
+ * Validates a card number using the Luhn Algorithm.
+ * Note: This checks format, not funds or existence.
+ */
+function luhnCheck(cardNumber) {
+  const digits = cardNumber
+    .replace(/\\D/g, '')  // Remove non-digits
+    .split('')
+    .reverse()
+    .map(Number);
+
+  let sum = 0;
+
+  for (let i = 0; i < digits.length; i++) {
+    let digit = digits[i];
+
+    // Double every second digit
+    if (i % 2 === 1) {
+      digit *= 2;
+      // If > 9, subtract 9 (same as adding digits)
+      if (digit > 9) {
+        digit -= 9;
+      }
+    }
+
+    sum += digit;
+  }
+
+  return sum % 10 === 0;
+}
+
+// Examples
+console.log(luhnCheck("5555555555554444")); // true
+console.log(luhnCheck("1234567890123456")); // false`,
+        language: "javascript",
+        label: "Luhn Algorithm Implementation"
+      }
+    ]}
+/>
+
+## Where I Was Wrong (Important Lesson)
+
+For a second, I thought:
+
+> "This means I can validate cards without any payment gateway."
+
+**Nope.**
+
+<Feedback
+    icon
+    variant="info"
+    title="The Reality Check"
+    description="Luhn only checks format and structure. It does NOT check: real card existence, CVV correctness, bank approval, or available balance. You can generate fake 'valid' cards all day."
+/>
+
+Here's where the "Junior" mindset meets the "Senior" reality [web:1]:
+
+<Row fillWidth gap="8" marginBottom="16" marginTop="8">
+  <Column fillWidth border="neutral-alpha-medium" padding="16" radius="m" background="surface-weak">
+    <Text variant="label-default-s" onBackground="critical-weak" marginBottom="8">Junior Dev</Text>
+    <Text variant="body-default-s">"I'll use Luhn to validate the card so I don't need a payment gateway yet."</Text>
+  </Column>
+  <Column fillWidth border="neutral-alpha-medium" padding="16" radius="m" background="surface-weak">
+    <Text variant="label-default-s" onBackground="success-weak" marginBottom="8">Senior Dev</Text>
+    <Text variant="body-default-s">"Luhn is a UI feature, not a security feature."</Text>
+  </Column>
+</Row>
+
+Luhn checks **syntax**, not **semantics**. A mathematically valid card number could be expired, cancelled, or completely non-existent. It's the difference between checking if a phone number has 10 digits and checking if someone actually picks up the phone.
+
+## The Final Architecture: How It Actually Flows
+
+<Media 
+  src="https://res.cloudinary.com/dmpsz3ohd/image/upload/v1776036134/nc6edco5tyb47wr8voye.png" 
+  alt="Payment Flow Architecture" 
+   
+  radius="l"
+  sizes="100vw"
+/>
+
+Here's what my production system actually looks like [web:1]:
+
+<AccordionGroup 
+  items={[
+    {
+      title: "Step 1: Frontend Validation (UX Only)",
+      content: <Text variant="body-default-s" onBackground="neutral-weak">User enters card → Frontend runs Luhn check → Instant red border on typos. No API call yet.</Text>
+    },
+    {
+      title: "Step 2: Direct-to-Provider Tokenization",
+      content: <Text variant="body-default-s" onBackground="neutral-weak">Card data goes directly from browser to Cashfree (via their SDK). Our backend never sees the raw PAN.</Text>
+    },
+    {
+      title: "Step 3: Store the Token",
+      content: <Text variant="body-default-s" onBackground="neutral-weak">Cashfree returns card_token → Backend stores token + last4 + expiry mapped to tenant + user.</Text>
+    },
+    {
+      title: "Step 4: Process Payments",
+      content: <Text variant="body-default-s" onBackground="neutral-weak">When charging: Fetch tenant's Cashfree credentials + user's card_token → Call charge API → Done.</Text>
+    }
+  ]}
+/>
+
+## The Complete Flow Diagram
+
+<Media 
+  src="https://res.cloudinary.com/dmpsz3ohd/image/upload/v1776036405/fzidjy9ja01gklapgov6.png" 
+  alt="Complete Multi-Tenant Payment Flow" 
+   
+  radius="l"
+  sizes="100vw"
+/>
+
+## Summary of Engineering Choices
+
+<Table 
+  data={{
+    headers: [
+      { content: "Component", key: "component", sortable: true },
+      { content: "Choice", key: "choice" },
+      { content: "Rationale", key: "rationale" }
+    ],
+    rows: [
+      ["Payment Provider", "Cashfree", "Multi-tenant support, tokenization, Indian market focus"],
+      ["Card Validation", "Luhn (frontend only)", "Instant UX feedback, not a security control"],
+      ["Card Storage", "Provider-side tokens", "Zero PCI scope, tokens useless outside provider"],
+      ["Tenant Credentials", "AES-256 encrypted at rest", "Decrypted in memory only during payment"],
+      ["Recurring Billing", "Token-based auto-debit", "No CVV storage needed, fully compliant"]
+    ]
+  }}
+/>
+
+## Key Takeaways (From a Dev Who Almost Over-Engineered This)
+
+<Row fillWidth gap="8" marginBottom="16" marginTop="8">
+  <Column fillWidth border="neutral-alpha-medium" padding="16" radius="m">
+    <Text variant="label-default-s" onBackground="brand-weak" marginBottom="8">1. Luhn ≠ Payment Validation</Text>
+    <Text variant="body-default-s">It's a quick frontend sanity check, not a replacement for a payment gateway.</Text>
+  </Column>
+  <Column fillWidth border="neutral-alpha-medium" padding="16" radius="m">
+    <Text variant="label-default-s" onBackground="brand-weak" marginBottom="8">2. Never Store Raw Card Data</Text>
+    <Text variant="body-default-s">Tokenization keeps you out of PCI scope. Period.</Text>
+  </Column>
+  <Column fillWidth border="neutral-alpha-medium" padding="16" radius="m">
+    <Text variant="label-default-s" onBackground="brand-weak" marginBottom="8">3. Encrypt Tenant Secrets</Text>
+    <Text variant="body-default-s">If your DB leaks, your tenants' businesses shouldn't be compromised.</Text>
+  </Column>
+  <Column fillWidth border="neutral-alpha-medium" padding="16" radius="m">
+    <Text variant="label-default-s" onBackground="brand-weak" marginBottom="8">4. Outsource Risk</Text>
+    <Text variant="body-default-s">Payment providers spend millions on compliance. Use their SDKs.</Text>
+  </Column>
+</Row>
+
+<Feedback
+    icon
+    variant="success"
+    title="The Bottom Line"
+    description="Building a SaaS is easy. Building a secure, multi-tenant financial bridge? That's where the fun actually begins."
+/>
+
+## Ending Thought
+
+That "trick" I found?
+
+It wasn't a shortcut.
+
+It was just step one of understanding how deep payment systems actually go.
+
+And honestly… that's where real backend engineering starts [web:1].
+
+<Row fillWidth gap="8" marginTop="24">
+  <Button variant="primary" label="View Payment Flow Diagram" prefixIcon="layout" />
+  <Button variant="secondary" label="Cashfree Integration Guide" suffixIcon="arrowUpRight" />
+</Row>
+
+---
+
+**What's your take?** Do you still use custom validation, or have you moved entirely to pre-built components like Stripe Elements or Cashfree Drops? Let's discuss in the comments.
