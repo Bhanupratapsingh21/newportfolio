@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Bhanu Pratap Singh – Resume</title>
+<style>
+  @font-face { font-family: "Inter"; src: url("fonts/Inter-Regular.ttf"); font-weight: 400; }
+  @font-face { font-family: "Inter"; src: url("fonts/Inter-Italic.ttf"); font-weight: 400; font-style: italic; }
+  @font-face { font-family: "Inter"; src: url("fonts/Inter-Medium.ttf"); font-weight: 500; }
+  @font-face { font-family: "Inter"; src: url("fonts/Inter-SemiBold.ttf"); font-weight: 600; }
+  @font-face { font-family: "Inter"; src: url("fonts/Inter-Bold.ttf"); font-weight: 700; }
+
+  @page { size: A4; margin: 9mm 12mm 8mm; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root { --ink: #111827; --muted: #4b5563; --accent: #1d4ed8; --rule: #d1d5db; }
+  body { font-family: "Inter", "Liberation Sans", Arial, sans-serif; color: var(--ink);
+         font-size: 8.9pt; line-height: 1.33; }
+  a { color: inherit; text-decoration: none; }
+
+  header { text-align: center; margin-bottom: 7px; }
+  h1 { font-size: 20pt; font-weight: 700; letter-spacing: -0.3px; }
+  .tagline { font-size: 10pt; font-weight: 500; color: var(--accent); margin-top: 1px; }
+  .contact { color: var(--muted); font-size: 8.6pt; margin-top: 3px; }
+  .contact span + span::before { content: "  |  "; white-space: pre; color: #9ca3af; }
+
+  h2 { font-size: 9.6pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.9px;
+       color: var(--accent); border-bottom: 1px solid var(--rule); padding-bottom: 1.5px;
+       margin: 7px 0 3px; }
+
+  .summary { text-align: justify; }
+
+  .job { margin-bottom: 4px; }
+  .row { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+  .company { font-weight: 700; font-size: 9.8pt; }
+  .date { color: var(--muted); font-size: 8.6pt; white-space: nowrap; }
+  .role { font-weight: 600; margin-top: 3px; }
+  .role .ctx { font-weight: 400; color: var(--muted); }
+  ul { padding-left: 13px; margin-top: 1.5px; }
+  li { margin-bottom: 1.4px; }
+  li::marker { color: #6b7280; }
+  b { font-weight: 600; }
+
+  .proj { margin-bottom: 2.5px; }
+  .proj .name { font-weight: 600; }
+  .proj .stack { color: var(--muted); font-style: italic; }
+
+  .skills div { margin-bottom: 1.5px; }
+  .skills b { display: inline-block; min-width: 118px; }
+
+  .edu .row + .row { margin-top: 2px; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Bhanu Pratap Singh</h1>
+  <div class="tagline">Full-Stack Engineer &nbsp;·&nbsp; Founding Engineer &nbsp;·&nbsp; Distributed Systems &amp; Cloud</div>
+  <div class="contact">
+    <span>India (Open to Remote)</span>
+    <span><a href="mailto:bhanupss137@gmail.com">bhanupss137@gmail.com</a></span>
+    <span><a href="https://bpss.in">bpss.in</a></span>
+    <span><a href="https://github.com/bhanupratapsingh21">github.com/bhanupratapsingh21</a></span>
+    <span><a href="https://www.linkedin.com/in/bhanu-pratap-singh-bbb976257/">LinkedIn</a></span>
+  </div>
+</header>
+
+<h2>Summary</h2>
+<p class="summary">
+  Full-stack engineer who has taken EdTech and SaaS platforms from MVP to production at scale.
+  As Tech Lead for Competishun (100K+ users, 50K+ peak concurrent test-takers), cut cloud cost by
+  <b>40%</b>, backend CPU from <b>99% to 25%</b> and video processing from <b>6 hours to under 30 minutes</b>,
+  and led a <b>14-microservice GCP&nbsp;→&nbsp;AWS migration</b>. Now founding engineer on Synapses, a white-label
+  enterprise LMS. Works directly with founders, clients and domain experts to turn ambiguous requirements
+  into shipped systems: Node.js, TypeScript, PostgreSQL, Redis, AWS.
+</p>
+
+<h2>Experience</h2>
+
+<div class="job">
+  <div class="row">
+    <span class="company">Newral Softwares Inc.</span>
+    <span class="date">Dec 2024 – Present</span>
+  </div>
+
+  <div class="role">Founding Engineer, Synapses <span class="ctx">· white-label enterprise LMS SaaS</span></div>
+  <ul>
+    <li>Building and maintaining the platform's microservices with <b>Next.js, TypeScript, PostgreSQL, Redis and BullMQ</b>; multi-tenant design lets each enterprise run the LMS under its own brand.</li>
+    <li>Architected <b>multi-tenant payments</b> with Cashfree: per-tenant isolation, tokenized card vaulting (PCI-aware) and subscription billing.</li>
+    <li>Run large-scale data operations across SQL and NoSQL databases and own production incident resolution.</li>
+  </ul>
+
+  <div class="role">Tech Lead, Competishun <span class="ctx">· EdTech platform, 100K+ users, 25K DAU · led team of 6 (4 engineers, 2 interns)</span></div>
+  <ul>
+    <li>Cut <b>cloud cost by 40%</b> and shrank compute from <b>32 to 4 cores</b> by optimizing SQL queries and consolidating cross-service network calls onto a single network path.</li>
+    <li>Reduced <b>backend CPU from 99% to 25%</b> through query optimization, Redis caching and workload restructuring, keeping weekly test series stable at <b>50K+ concurrent students</b>.</li>
+    <li>Led migration of <b>14 microservices from GCP to AWS</b> (via ACE Cloud), improving scalability, reliability and cost efficiency.</li>
+    <li>Rebuilt the <b>FFmpeg video transcoding pipeline</b> (S3 presigned ingest, adaptive-bitrate HLS, DRM playback), cutting processing time from <b>6 hours to under 30 minutes</b>.</li>
+    <li>Designed and built <b>4 of the platform's 14 microservices</b>; fixed critical production issues across services, cutting <b>app crashes by 90%</b>. Owned code review and release quality for the team.</li>
+  </ul>
+
+  <div class="role">Full-Stack Engineer, Client Delivery <span class="ctx">· startups, VC-backed and government-funded</span></div>
+  <ul>
+    <li><b>Sole engineer on AssumeChat</b>: shipped MVP and V1 used in VC demos and the funding round.</li>
+    <li>Delivered the <b>Agrevon</b> MVP (Startup India Seed Fund) and the <b>Rapid Stroke</b> backend, working directly with doctors and medical students on requirements.</li>
+    <li>Set up Prometheus/Grafana monitoring and GitHub Actions CI/CD for <b>Fizz Social</b>; built <b>Emotions AI</b> on React Native and Next.js.</li>
+  </ul>
+</div>
+
+<div class="job">
+  <div class="row">
+    <span class="company">Eventory <span class="ctx" style="font-weight:400;color:var(--muted);font-size:9pt">· Full-Stack Engineering Intern</span></span>
+    <span class="date">Aug 2024 – Oct 2024</span>
+  </div>
+  <ul>
+    <li>Built a two-sided event marketplace with vendor SaaS subscriptions, customer discovery and booking; integrated <b>Razorpay and Stripe</b> payment flows.</li>
+  </ul>
+</div>
+
+<h2>Projects</h2>
+<div class="proj"><span class="name">Vibe Social</span> (<a href="https://vibesocial.bpss.tech">vibesocial.bpss.tech</a>): video and post sharing platform with subscriptions, playlists, analytics and an in-house FFmpeg transcoder that writes multiple resolutions to AWS S3. <span class="stack">React, Node.js, Express, MongoDB, Redux, AWS S3</span></div>
+<div class="proj"><span class="name">Linky</span> (<a href="https://linky.bpss.tech">linky.bpss.tech</a>): SaaS URL shortener with JWT auth, multi-target redirects and click analytics (IP, device, OS). <span class="stack">Next.js, Express, TypeScript, PostgreSQL, Prisma</span></div>
+<div class="proj"><span class="name">Unfiltered Byte</span> (<a href="https://unfiltered-byte.bpss.tech">unfiltered-byte.bpss.tech</a>): community and wellness mobile app for developers. <span class="stack">React Native, Expo, Node.js, MongoDB, Appwrite</span></div>
+<div class="proj"><span class="name">Engineering writing</span> (<a href="https://bpss.in/blog">bpss.in/blog</a>): <i>Architecting a Resilient Video Transcoding Pipeline</i>; <i>Architecting Multi-Tenant Payments</i>.</div>
+
+<h2>Technical Skills</h2>
+<div class="skills">
+  <div><b>Languages</b>JavaScript, TypeScript, SQL</div>
+  <div><b>Backend</b>Node.js, Express, Microservices, REST APIs, BullMQ, Redis, JWT / NextAuth</div>
+  <div><b>Databases</b>PostgreSQL, MongoDB, Prisma, Mongoose, query optimization &amp; indexing</div>
+  <div><b>Cloud &amp; DevOps</b>AWS, GCP, Docker, NGINX, GitHub Actions, Prometheus, Grafana, Vercel</div>
+  <div><b>Frontend &amp; Mobile</b>React, Next.js, React Native (Expo), Redux, Zustand, Tailwind CSS, shadcn/ui</div>
+  <div><b>Media &amp; Payments</b>FFmpeg, HLS / adaptive bitrate, DRM, Shaka Player, Cashfree, Razorpay, Stripe</div>
+</div>
+
+<h2>Education</h2>
+<div class="edu">
+  <div class="row"><span><b>Bachelor of Commerce (B.Com)</b>, Maharshi Dayanand Saraswati University (MDSU), Ajmer</span><span class="date">May 2026</span></div>
+  <div class="row"><span><b>Full-Stack Web Development</b> (MERN, DSA, System Design), Masai School</span><span class="date">Sep 2023 – Jul 2025</span></div>
+</div>
+
+</body>
+</html>
